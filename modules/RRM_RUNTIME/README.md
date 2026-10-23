@@ -1,39 +1,29 @@
-# RRM-RUNTIME 0.1 — Integration RRM-KERN 0.5 + RRM-ID 0.1
+# RRM-RUNTIME 0.2 — direkte Operationen auf binären Referenzen
 
-**Status:** ausführbarer Forschungsprototyp, **keine** vollständige binäre VM und **kein** Nachweis allgemeiner Intelligenz.
+**Forschungsprototyp, keine universelle KI und keine native Maschinen-VM.**
 
-## Ausführen (Python 3.10+, nur Standardbibliothek)
+Diese Version übernimmt den RRM-ID-Encoder und die SQLite-gestützte Arena aus Runtime 0.1 und ergänzt `binary_ops.py`:
 
-```sh
+- `RELATE`: Relation aus vorhandenen Record-Handles bilden und internieren.
+- `DIFF`: Zwei Zustands-Handles anhand ihrer kodierten Knoten- und Kantenreferenzen vergleichen. Liefert geänderte Kanten, ohne komplette Zustände in Python-Dictionaries oder JSON zu materialisieren.
+- `CONTINUE`: Eine beobachtete Relationsänderung auf einen Zustand übertragen; unveränderte Referenzen bleiben erhalten. Die Fortsetzung wird als neuer **hypothetischer Snapshot** gespeichert, nicht als Beobachtung oder Evidenz.
+
+**Explizite Einschränkungen:**
+
+1. `DIFF` setzt identische Knotenreferenzen und gleich angeordnete Kanten voraus. Automatische Objektverfolgung, Graphisomorphie und Kantenzuordnung fehlen.
+2. `CONTINUE` ist eine einfache regelbasierte Substitution unter Typprüfung. Keine kausale Begründung, keine allgemeine Kontexterkennung.
+3. Die Evidenzabfrage, `observe` und `predict` aus Runtime 0.1 verwenden weiterhin JSON-Signaturen. Es handelt sich **noch nicht** um einen durchgängig binären Lernpfad.
+4. SQLite-Zugriffe und Python-Objekte bleiben vorhanden. „Direkt“ bedeutet hier **ohne vollständige Zustands-Dekodierung**, nicht „ohne Dekodierung irgendeines Records“.
+5. Der bestehende 8-Bit-Kopf kodiert Klasse, Modus und Länge, **keinen ausführbaren Opcode**.
+6. Persistenz ist durch SQLite gegeben; `CONTINUE` schreibt neue Record-Daten in den Speicher, aber keine Beobachtung. Speicherbedarf und Schreibkosten bleiben zu optimieren.
+
+## Start
+
+```bash
 python -m unittest discover -v
 python benchmark.py
 ```
 
-## Implementiert
+## Nächster Schritt
 
-- Unveränderliche, internierte Datensätze im hybriden 8-Bit-Header-/variablen Payload-Format aus `rrm_id.py`.
-- Persistente SQLite-Arena: jeder Datensatz wird als BLOB gespeichert; Knoten, Relationen und Zustände referenzieren vorhandene Datensätze statt diese zu kopieren.
-- Zustands-Snapshots haben stabile Referenz-Handles; isolierte Knoten bleiben erhalten.
-- `observe`, `predict`, `dream` teilen die Evidenzlogik aus RRM-KERN 0.5. Reale Beobachtungen werden als **State-ID** persistiert, nicht als vollständiger JSON-Text.
-- Dream erzeugt Hypothesen ohne Lernschreibzugriffe.
-- Vorhersage akzeptiert direkt ein Handle eines gespeicherten Zustands.
-- Reproduzierbare Paritätstests mit RRM-KERN 0.5.
-
-## Noch nicht implementiert / Grenzen
-
-- **Keine vollständig binäre Ausführung:** Beobachtungsabgleich, Kontextsignaturen und Regelabfrage werden weiterhin mit Python-Strukturen und JSON-kodierten Evidenzschlüsseln ausgeführt. Der Encoder/Decoder verarbeitet binäre Datensätze; der Lernalgorithmus ist nicht nativ auf Bitfeldern implementiert.
-- Keine operationstragenden Instruktions-IDs, keine RRM-Schrankenarithmetik, keine selbstgewählten Ziele und keine multimodale Wahrnehmung.
-- Identität durch Namen und Knotenreferenzen; keine Lösung für Objektverfolgung bei Namenswechsel über Zeit.
-- Knoten-Namenspaare verwenden `KIND_RELATION` mit zwei Referenzen als **technische Zwischenform**; die finale RRM-Typsprache ist noch nicht festgelegt.
-- Referenzen sind datenbanklokale SQLite-IDs, keine globalen 64-Bit-Identitäten. Der Datensatz-Header enthält den Datensatztyp, Modus und die Längenklasse, aber **keinen Opcode**.
-- Das Persistenzformat ist experimentell und nicht migrationsstabil.
-- SQLite-Index-, Seiten- und Verwaltungs-Overhead kann die theoretische Payload-Ersparnis übertreffen. Siehe Benchmark; **keine pauschalen Leistungsversprechen**.
-- `store_state` erfordert weiterhin strukturierte Eingaben; die Grenze zur realen Bild-/Audioerkennung ist offen.
-
-## Nächster gezielter Schritt
-
-1. Eine **kanonische binäre Signatur** für Evidenz und Kontext statt JSON definieren.
-2. Binäre Zustandsdifferenzen und Transformationen unmittelbar auf Arena-Referenzen ausführen.
-3. Gegen RRM-KERN 0.5 auf identischen Daten und mit gleicher Semantik benchmarken; danach ggf. Operationscode entwerfen.
-
-Das Ziel ist **weniger doppelte Semantik**, nicht zusätzliche parallele Lernmodule.
+Die binären Operationen in `observe`/`predict` integrieren und Evidenzsignaturen durch kanonische binäre Schlüssel ersetzen. Danach fair gegen den bisherigen JSON-Pfad benchmarken (inklusive Ingestion, Persistenz und Speicherkosten). Keine weiteren KI-Spezialmodule.

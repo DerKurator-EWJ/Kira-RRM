@@ -1,25 +1,19 @@
-"""Run python benchmark.py; fair end-to-end prototype comparison (not optimized native runtime)."""
-import json,sqlite3,time,tempfile,os
+"""Microbenchmark: direct record-handle DIFF vs materialized Python-state DIFF.
+Includes SQLite record reads for binary path; does not include state ingestion.
+"""
+from time import perf_counter
 from runtime import BinaryRuntime
-from rrm05 import Kernel
+from binary_ops import BinaryOps
+from rrm05 import changes
 
-def state(i):
-    return {'nodes':{'a':'point','b':'point','c':'signal'},'edges':[['a',('near','far')[i%2],'b'],['c',('red','blue')[(i//20)%2],'a']]}
+def make(rel):
+    return {'nodes':{'a':'point','b':'point','c':'signal'},'edges':[['a',rel,'b'],['c','red','a']]}
 
-def run(n=1000):
-    with tempfile.TemporaryDirectory() as d:
-        rows=[]
-        for label,cls in [('json',Kernel),('hybrid',BinaryRuntime)]:
-            path=os.path.join(d,label+'.sqlite'); k=cls(path)
-            t=time.perf_counter()
-            for i in range(n): k.observe('x',state(i))
-            write=time.perf_counter()-t
-            t=time.perf_counter()
-            for i in range(100): k.predict('x',state(i),focus=0)
-            read=time.perf_counter()-t
-            k.close(); size=os.stat(path).st_size
-            rows.append((label,size,write,read))
-        for label,size,write,read in rows:
-            print(f'{label:8} db_bytes={size:8} observe_s={write:.4f} predict_100_s={read:.4f}')
-        print('Results depend on Python, SQLite, input shape, and machine; no general speed claim.')
-if __name__=='__main__':run()
+rt=BinaryRuntime(); ops=BinaryOps(rt)
+a=make('near'); b=make('far'); ah=rt.store_state(a); bh=rt.store_state(b)
+N=3000
+for label,fn in [('binary_diff',lambda:ops.diff(ah,bh)),('materialize_and_diff',lambda:changes(rt.load_state(ah),rt.load_state(bh))),('in_memory_python_diff',lambda:changes(a,b))]:
+    start=perf_counter()
+    for _ in range(N): fn()
+    print(f'{label}: {(perf_counter()-start)*1000:.2f} ms / {N} operations')
+rt.close()

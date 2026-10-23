@@ -21,3 +21,4 @@ Lauffaehigkeit und Integration der Module sind nicht allein durch den Import bel
 | `rrm-unified-v0.1` | `RRM_UNIFIED_0_1.zip` | `modules/RRM_UNIFIED/` |
 | `kira-rrm-bridge-v0.1` | `KIRA_RRM_BRIDGE_0_1.zip` | `modules/KIRA_RRM_BRIDGE/` |
 | `kira-rrm-core-v0.1` | `KIRA_RRM_CORE_0_1.zip` | `modules/KIRA_RRM_CORE/` |
+| `rrm-id-v0.1` | `RRM_ID_0_1.zip` | `modules/RRM_ID/` |

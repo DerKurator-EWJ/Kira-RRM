@@ -1,0 +1,95 @@
+{
+  "schema": 1,
+  "purpose": "Benennungsregister; keine automatische Code-Übersetzung",
+  "terms": {
+    "Spur": {
+      "english": "observation",
+      "code": "Observation",
+      "meaning": "Ein einzelner beobachteter Ausschnitt"
+    },
+    "Merkmalsmaß": {
+      "english": "feature quantizer",
+      "code": "FeatureQuantizer",
+      "meaning": "Macht Messwerte vergleichbar"
+    },
+    "Zusammenhang": {
+      "english": "relation / coupling",
+      "code": "Relation",
+      "meaning": "Beziehung zwischen Spuren"
+    },
+    "Band": {
+      "english": "group / cluster",
+      "code": "Group",
+      "meaning": "Verbund zusammengehöriger Spuren"
+    },
+    "Blicktiefe": {
+      "english": "adaptive resolution",
+      "code": "AdaptiveResolution",
+      "meaning": "Wählt Untersuchungstiefe"
+    },
+    "Wiedererkennung": {
+      "english": "identity tracking",
+      "code": "IdentityTracker",
+      "meaning": "Verfolgt mögliche Identität über Beobachtungen"
+    },
+    "Bestand": {
+      "english": "part-whole model",
+      "code": "PartWholeModel",
+      "meaning": "Unterscheidet Teil und Verbindung"
+    },
+    "Staunen": {
+      "english": "inquiry",
+      "code": "Inquiry",
+      "meaning": "Verwaltet offene untersuchbare Fragen"
+    },
+    "Erwartung": {
+      "english": "prediction",
+      "code": "Prediction",
+      "meaning": "Vorläufige Aussage über Folgeereignisse"
+    },
+    "Vermutung": {
+      "english": "hypothesis",
+      "code": "Hypothesis",
+      "meaning": "Prüfbare mögliche Erklärung"
+    },
+    "Beleg": {
+      "english": "evidence",
+      "code": "Evidence",
+      "meaning": "Beobachtung zur Prüfung einer Vermutung"
+    },
+    "Festigung": {
+      "english": "consolidation",
+      "code": "Consolidation",
+      "meaning": "Vorläufige Stabilisierung einer Erklärung"
+    },
+    "Umbau": {
+      "english": "revision",
+      "code": "Revision",
+      "meaning": "Begründete Änderung eines Modells"
+    },
+    "Gedächtnis": {
+      "english": "memory",
+      "code": "Memory",
+      "meaning": "Speichert Erfahrungen und Modelle"
+    },
+    "Blickmaß": {
+      "english": "attention budget",
+      "code": "AttentionBudget",
+      "meaning": "Begrenztes Untersuchungsbudget"
+    },
+    "Prüfung": {
+      "english": "evaluation",
+      "code": "Evaluation",
+      "meaning": "Vergleicht Erklärung und Beobachtung"
+    },
+    "Ding": {
+      "english": "entity",
+      "code": "Entity",
+      "meaning": "Vorläufig fortbestehende Einheit"
+    },
+    "Identitätsfrage": {
+      "code": "IdentityInquiry",
+      "meaning": "Offene Zuordnung einer Sicht zu einem fortbestehenden Ding"
+    }
+  }
+}

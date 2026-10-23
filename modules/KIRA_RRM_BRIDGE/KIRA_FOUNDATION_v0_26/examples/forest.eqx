@@ -1,0 +1,14 @@
+FOREST Kira
+BEGIN_TREE Doozers
+THESIS build root doozers bauen konstruktionen
+SEAL
+END_TREE
+BEGIN_TREE Fraggles
+THESIS eat root fraggles essen konstruktionen
+SEAL
+END_TREE
+RELATE Doozers root depends_on Fraggles root
+EXTERNAL Doozers root stimulus
+RUN
+SETTLE_ALL
+SEAL_FOREST

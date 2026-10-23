@@ -19,3 +19,4 @@ Lauffaehigkeit und Integration der Module sind nicht allein durch den Import bel
 | `rrm-runtime-v0.1` | `RRM_RUNTIME_0_1.zip` | `modules/RRM_RUNTIME/` |
 | `rrm-runtime-v0.2` | `RRM_RUNTIME_0_2.zip` | `modules/RRM_RUNTIME/` |
 | `rrm-unified-v0.1` | `RRM_UNIFIED_0_1.zip` | `modules/RRM_UNIFIED/` |
+| `kira-rrm-bridge-v0.1` | `KIRA_RRM_BRIDGE_0_1.zip` | `modules/KIRA_RRM_BRIDGE/` |

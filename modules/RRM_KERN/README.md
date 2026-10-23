@@ -1,45 +1,52 @@
-# RRM-KERN 0.3 — Beobachtete Transformationen verallgemeinern
+# RRM-KERN 0.4 — Kontextabhängige Hypothesen
 
-**Status:** kleiner experimenteller Regelinduktor, **keine** allgemeine KI, keine Kausalitätsentdeckung, keine formale Komplettumsetzung von RRM.
+**Forschungsprototyp, keine allgemeine KI und keine vollständige RRM-Formalisation.**
 
-## Änderung gegenüber 0.2
+## Neuer Schritt
 
-0.2 speicherte Übergänge zwischen *vollständigen* Graphsignaturen. 0.3 erkennt in zwei beobachteten Graphzuständen unter eng definierten Voraussetzungen eine **einzelne Änderung einer Relationsart** und abstrahiert sie als typisierte Regel:
+Version 0.3 lernte `(point, near, point) -> far` ohne Kontext. 0.4 zählt die Ergebnisse getrennt nach den **lokalen, unveränderten Nachbarrelationen** einer Kante. Aus wiederholten Beobachtungen kann sich beispielsweise ergeben:
 
-    (Quelltyp, alte Relationsart, Zieltyp) -> neue Relationsart
+- Wenn eine `signal --red--> point`-Relation anliegt, wurde `point --near--> point` zu `far`.
+- Wenn stattdessen `signal --blue--> point` anliegt, blieb `near` unverändert (`NO_CHANGE`).
+- Bei unbekanntem Kontext `green` bleibt die Fortsetzung `OPEN`.
 
-Beispiel: `(point, near, point) -> far`. Diese Hypothese kann auf andere lokale IDs und auf Graphen mit zusätzlichen, unveränderten Beziehungen übertragen werden. Die Induktion verlangt eine eindeutige Regel; sie scheitert bewusst bei mehrdeutigen oder mehrschrittigen Änderungen. Bei der Anwendung muss genau **eine** Kante passen. Gleichermaßen gut gestützte konkurrierende Regeln führen zu `OPEN`.
+Das ist **kontextbedingte Korrelation**, kein Nachweis einer Ursache. Gleich häufig beobachtete Ausgänge werden als `OPEN` ausgewiesen. Bei mehrdeutigen möglichen Zielkanten wird ebenfalls nicht geraten. Hypothesen werden nicht als Beobachtungen zurückgespeichert. Die Evidenz ist in SQLite persistent.
 
-Regeln werden ausschließlich aus beobachteten Paaren gelernt und in SQLite mit einer Evidenzanzahl gespeichert. Hypothetische Ergebnisse werden **nicht** zurück als Beobachtungen gespeichert. Standardmäßig sind zwei beobachtete Belege erforderlich, bevor eine Regel übertragen wird. Dies ist ein konfigurierbarer Prototyp-Schwellenwert, keine fundamentale RRM-Grenze.
+## Verwendung
 
-## Test
+Python 3.9+, keine zusätzlichen Pakete. Im Verzeichnis ausführen:
 
-Python 3.9+ ohne Fremdpakete:
+    python -m unittest -v
 
-    python -m unittest -v test_rrm.py test_rrm03.py
-
-Beispiel:
+Einzelnes Beobachtungsbeispiel:
 
 ```python
-from rrm03 import RuleCore
-k = RuleCore('test.sqlite')
-near = {'nodes': {'a':'point','b':'point'}, 'edges': [['a','near','b']]}
-far  = {'nodes': {'a':'point','b':'point'}, 'edges': [['a','far','b']]}
-for s in (near,far,near,far): k.observe('camera',s)
-new = {'nodes': {'x':'point','y':'point','z':'other'},
-       'edges': [['x','near','y'],['z','attached','x']]}
-print(k.transfer('camera',new))
+from rrm04 import ContextCore
+k = ContextCore('kira.sqlite')
+a = {'nodes':{'a':'point','b':'point','c':'signal'},
+     'edges':[['a','near','b'],['c','red','a']]}
+b = {'nodes':a['nodes'],
+     'edges':[['a','far','b'],['c','red','a']]}
+for s in (a,b,a,b):
+    k.observe('camera',s)
+print(k.explain('camera',a,focus=0))
 ```
 
-## Präzise Grenzen
+`focus=0` bezeichnet die untersuchte Kante. Ohne `focus` verweigert der Prototyp eine Entscheidung, wenn mehrere Kanten hinreichend gestützte Fortsetzungen haben. Das ist eine bewusste Einschränkung statt einer versteckten Auswahl.
 
-- Die Regel beschreibt **Korrelation eines beobachteten Übergangs**, nicht dessen Ursache. Zeit, Eingriffe und Kontextbedingungen sind noch nicht modelliert.
-- Induktion ist auf Graphen mit höchstens sieben Knoten begrenzt, da sie mögliche Knotenzuordnungen exhaustiv prüft. Die Grenze ist rein implementierungsbedingt.
-- Bei strukturellen Symmetrien können mehrere Knotenzuordnungen bestehen; nur wenn sie dieselbe abstrakte Regel ergeben, wird gelernt.
-- Der Prototyp kann übergeneralisieren: Eine Regel, die in einem Kontext beobachtet wurde, ist nicht automatisch in allen anderen Kontexten gültig. Die Tests beweisen nur syntaktischen Transfer, keine semantische Richtigkeit.
-- Keine eigenständige Fragebildung, keine Pixel-/Audioschnittstellen, keine operationstragenden IDs, keine RRM-Schrankenarithmetik, keine Leistungsbenchmarks.
-- `rrm.py` ist der Kern aus 0.2; `rrm03.py` ist ein **getrennter Forschungsaufsatz** zur Gegenüberstellung, kein Beweis für die endgültige Architektur.
+## Was konkret getestet ist
 
-## Nächste Prüfung
+16 Unit-Tests insgesamt (0.2, 0.3, 0.4): Persistenz, Regeltransfer bei neuen Knotennamen, einfache Kontexttrennung, Gleichstand, unbekannter Kontext, verweigerte Mehrfachänderungen und keine Vermischung von Dream und Beobachtung.
 
-Zuerst gezielte **Gegenbeispiele** und kontextabhängige Übergänge testen. Dann muss Kira entscheiden können, wann eine Regel zu allgemein ist und unter welchen Bedingungen sie gilt. Erst danach lohnt sich eine Verdichtung in eine eigene RRM-Syntax/Bit-VM. Ziel ist, Regeln aus einem gemeinsamen Mechanismus abzuleiten, nicht immer mehr Spezialmodule anzuhängen.
+## Wichtige Grenzen
+
+1. Der Kontext ist derzeit die **exakte lokale Nachbarschaft**. Es werden noch keine relevanten Kontextmerkmale aus vielen Kandidaten selbst entdeckt. Eine zusätzliche irrelevante Relation kann die Wiedererkennung verhindern.
+2. Die Extraktion erfordert dieselben Knoten-IDs und dieselbe Kantenreihenfolge zwischen zwei beobachteten Zuständen. Sie akzeptiert höchstens eine Relationsänderung; bei unverändertem Zustand sammelt sie `NO_CHANGE`-Evidenz. Reale Videos benötigen vorher Tracking und Quantisierung.
+3. Das Zählen von `NO_CHANGE` an mehreren Kanten kann bei automatischer Zielwahl Mehrdeutigkeiten erzeugen. `focus` ist derzeit eine explizite Fragestellung, noch keine autonome Aufmerksamkeit.
+4. Das bisherige 0.3-Modul lernt zusätzlich seine unbedingten Regeln. 0.4 verwendet für `explain` ausschließlich kontextuelle Evidenz; **die beiden Modelle sind noch nicht zu einem einzigen minimalen Kern verdichtet**.
+5. Das kanonische Graphverfahren aus 0.2 ist auf sieben Knoten begrenzt. Keine Laufzeitbenchmarks, keine multimodale Generierung, keine eigenständige Zielbildung, keine operationstragenden Bit-IDs.
+6. `OPEN` plus eine vorformulierte Untersuchungsfrage ist **nicht** das vom Nutzer gemeinte Staunen, das mit „Was ist das überhaupt?“ beginnen kann.
+
+## Nächster sinnvoller Schritt
+
+**Nicht 0.5 als weiteres Modul anhängen:** Erst die gemeinsame Evidenz-/Transformationssemantik von 0.2–0.4 verdichten und die Notwendigkeit der einzelnen Grundoperationen prüfen. Anschließend ein Test, bei dem die entscheidende Kontextbedingung aus mehreren irrelevanten Merkmalen *gelernt* werden muss (Train-/Test-Trennung und echte Fehlerquote).

@@ -1,0 +1,5 @@
+FABRIC Kira CELLS 2
+WORK w1 doozers bauen bauwerke RELATE fraggle NEXT
+WORK w2 fraggles essen bauwerke SPLIT fraggle NEXT
+WORK w3 system ist verbunden MIRROR fraggle NEXT
+RUN

@@ -1,48 +1,45 @@
-# RRM-KERN 0.2 — Formale Minimalgrammatik und relationaler Prototyp
+# RRM-KERN 0.3 — Beobachtete Transformationen verallgemeinern
 
-**Status:** überprüfbarer Versuch, **keine** allgemeine KI und **keine** vollständige Formalisierung der RRM. Die ursprüngliche Sequenzversion 0.1 liegt als `legacy_sequence.py` bei; 0.2 ist eine zusätzliche **alternative Kernhypothese**, keine weitere Feature-Schicht.
+**Status:** kleiner experimenteller Regelinduktor, **keine** allgemeine KI, keine Kausalitätsentdeckung, keine formale Komplettumsetzung von RRM.
 
-## Minimale ausführbare Sprache (Arbeitsdefinition)
+## Änderung gegenüber 0.2
 
-```
-Knoten := (lokale_ID, Typ)
-Relation := (Quell_ID, Relationsart, Ziel_ID)
-Zustand := (endliche Knotenmenge, endliche Relationsmultimenge)
-Beobachtung := (Stream, Position, Zustand)
-Übergang := (Zustand_t, Zustand_t+1, Evidenzanzahl)
-Offene_Frage := (Zustand, Frage, OPEN)
-Fortsetzung := bestgestützter beobachteter Übergang | OPEN
-```
+0.2 speicherte Übergänge zwischen *vollständigen* Graphsignaturen. 0.3 erkennt in zwei beobachteten Graphzuständen unter eng definierten Voraussetzungen eine **einzelne Änderung einer Relationsart** und abstrahiert sie als typisierte Regel:
 
-**Semantik:** IDs sind innerhalb eines Zustands bloße lokale Referenzen. Strukturelle Identität wird durch die gleiche gerichtete, typisierte Graphstruktur **bis auf Umbenennung** definiert. Die exakte Kanonisierung erhält Richtung, Typ und Multiplizität der Kanten. Beobachtungen bleiben unverändert in SQLite; Übergänge werden als Evidenz gezählt. Vorhersage ist die häufigste beobachtete Fortsetzung des aktuellen Strukturzustands, nicht logische Gewissheit. Dream setzt dieselben Übergänge hypothetisch fort und verändert die Evidenz nicht. Eine Frage ist explizit gestellt; **OPEN ist nicht Staunen**. Das System formuliert noch keine eigenen Fragen.
+    (Quelltyp, alte Relationsart, Zieltyp) -> neue Relationsart
 
-## Minimaler Test
+Beispiel: `(point, near, point) -> far`. Diese Hypothese kann auf andere lokale IDs und auf Graphen mit zusätzlichen, unveränderten Beziehungen übertragen werden. Die Induktion verlangt eine eindeutige Regel; sie scheitert bewusst bei mehrdeutigen oder mehrschrittigen Änderungen. Bei der Anwendung muss genau **eine** Kante passen. Gleichermaßen gut gestützte konkurrierende Regeln führen zu `OPEN`.
 
-Im Verzeichnis mit Python 3.9+:
+Regeln werden ausschließlich aus beobachteten Paaren gelernt und in SQLite mit einer Evidenzanzahl gespeichert. Hypothetische Ergebnisse werden **nicht** zurück als Beobachtungen gespeichert. Standardmäßig sind zwei beobachtete Belege erforderlich, bevor eine Regel übertragen wird. Dies ist ein konfigurierbarer Prototyp-Schwellenwert, keine fundamentale RRM-Grenze.
 
-    python -m unittest -v test_rrm.py
+## Test
 
-Oder interaktiv:
+Python 3.9+ ohne Fremdpakete:
+
+    python -m unittest -v test_rrm.py test_rrm03.py
+
+Beispiel:
 
 ```python
-from rrm import RelationalCore
-k = RelationalCore('versuch.sqlite')
-a = {'nodes': {'a':'punkt','b':'punkt'}, 'edges': [['a','nahe','b']]}
-b = {'nodes': {'x':'punkt','y':'punkt'}, 'edges': [['x','fern','y']]}
-for state in [a,b,a,b,a]: k.observe('versuch',state)
-print(k.predict('versuch'))
-print(k.dream('versuch',3))
-print(k.ask('versuch',a,'Warum verändert sich die Relation?'))
+from rrm03 import RuleCore
+k = RuleCore('test.sqlite')
+near = {'nodes': {'a':'point','b':'point'}, 'edges': [['a','near','b']]}
+far  = {'nodes': {'a':'point','b':'point'}, 'edges': [['a','far','b']]}
+for s in (near,far,near,far): k.observe('camera',s)
+new = {'nodes': {'x':'point','y':'point','z':'other'},
+       'edges': [['x','near','y'],['z','attached','x']]}
+print(k.transfer('camera',new))
 ```
 
-## Nachweis und Grenzen
+## Präzise Grenzen
 
-- **Getestet:** identische Struktur trotz anderer Knotennamen; Persistenz; beobachtete Strukturübergänge; hypothetische Fortsetzung ohne Rückkopplung; explizite offene Fragen; Isolation verschiedener Streams.
-- **Noch nicht erreicht:** freie Erkennung von Relationen aus Pixeln/Ton, allgemeine kausale Regelbildung, Verallgemeinerung von Strukturänderungen auf neue Ausgangsgraphen, autonome Fragenauswahl, RRM-Schrankenarithmetik, operationstragende Bit-IDs, Echtzeit, Video-/Tonausgabe.
-- **Bewusste Grenze:** exakte kanonische Graphrepräsentation maximal sieben Knoten. Oberhalb davon wird abgebrochen statt stillschweigend eine ungenaue Gleichsetzung vorzunehmen. Die Kanonisierung ist kombinatorisch teuer; kein Effizienznachweis.
-- **Offener Prozess (∞):** fortsetzbare endliche Beobachtungsfolge, keine real unendliche Berechnung. Die Grenze von sieben Knoten ist **eine temporäre Implementierungsgrenze**, kein ontologisches RRM-Axiom.
-- **Achtung:** Aus der Beobachtung A→B folgt noch keine kausale Erklärung *warum* B folgt. Wiedererkennen ist nicht Verstehen.
+- Die Regel beschreibt **Korrelation eines beobachteten Übergangs**, nicht dessen Ursache. Zeit, Eingriffe und Kontextbedingungen sind noch nicht modelliert.
+- Induktion ist auf Graphen mit höchstens sieben Knoten begrenzt, da sie mögliche Knotenzuordnungen exhaustiv prüft. Die Grenze ist rein implementierungsbedingt.
+- Bei strukturellen Symmetrien können mehrere Knotenzuordnungen bestehen; nur wenn sie dieselbe abstrakte Regel ergeben, wird gelernt.
+- Der Prototyp kann übergeneralisieren: Eine Regel, die in einem Kontext beobachtet wurde, ist nicht automatisch in allen anderen Kontexten gültig. Die Tests beweisen nur syntaktischen Transfer, keine semantische Richtigkeit.
+- Keine eigenständige Fragebildung, keine Pixel-/Audioschnittstellen, keine operationstragenden IDs, keine RRM-Schrankenarithmetik, keine Leistungsbenchmarks.
+- `rrm.py` ist der Kern aus 0.2; `rrm03.py` ist ein **getrennter Forschungsaufsatz** zur Gegenüberstellung, kein Beweis für die endgültige Architektur.
 
-## Nächster echter Forschungsentscheid
+## Nächste Prüfung
 
-Nicht weitere Features anhängen. Zunächst messen, ob diese Graphstruktur gegenüber 0.1 **neue** Relationen abstrahiert, und ob sich eine *Transformationsregel* (welche Relation ändert sich?) aus mehreren Beispielen lernen lässt, ohne sie für jedes Beispiel zu programmieren. Anschließend mit den Kotlin-Kernstrukturen des ursprünglichen Kira-Systems vergleichen. Die Bit-ID-Grammatik wird erst nach der Semantik festgelegt.
+Zuerst gezielte **Gegenbeispiele** und kontextabhängige Übergänge testen. Dann muss Kira entscheiden können, wann eine Regel zu allgemein ist und unter welchen Bedingungen sie gilt. Erst danach lohnt sich eine Verdichtung in eine eigene RRM-Syntax/Bit-VM. Ziel ist, Regeln aus einem gemeinsamen Mechanismus abzuleiten, nicht immer mehr Spezialmodule anzuhängen.

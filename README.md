@@ -12,3 +12,4 @@ Lauffaehigkeit und Integration der Module sind nicht allein durch den Import bel
 |---|---|---|
 | `rrm-kern-v0.1` | `RRM_KERN_0_1.zip` | `modules/RRM_KERN/` |
 | `rrm-kern-v0.2` | `RRM_KERN_0_2.zip` | `modules/RRM_KERN/` |
+| `rrm-kern-v0.3` | `RRM_KERN_0_3.zip` | `modules/RRM_KERN/` |

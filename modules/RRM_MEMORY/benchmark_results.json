@@ -1,0 +1,73 @@
+{
+  "parameters": {
+    "records": 12000,
+    "lookups_per_pattern": 10000,
+    "cache_budget_payload_bytes": 65536
+  },
+  "sqlite_file_bytes": 323584,
+  "wire_payload_bytes": 93853,
+  "hot90": {
+    "ram": {
+      "seconds": 0.012229,
+      "route_seconds": 0.000575,
+      "checksum": 12625357915001764335,
+      "routed": 4000,
+      "loads": 0,
+      "bytes_loaded": 0,
+      "cache_hits": 0,
+      "cache_peak_payload_bytes": 0
+    },
+    "disk": {
+      "seconds": 0.052982,
+      "route_seconds": 0.004066,
+      "checksum": 12625357915001764335,
+      "routed": 4000,
+      "loads": 10000,
+      "bytes_loaded": 77388,
+      "cache_hits": 0,
+      "cache_peak_payload_bytes": 0
+    },
+    "routed_cache": {
+      "seconds": 0.019242,
+      "route_seconds": 0.001074,
+      "checksum": 12625357915001764335,
+      "routed": 4000,
+      "loads": 1041,
+      "bytes_loaded": 8130,
+      "cache_hits": 8959,
+      "cache_peak_payload_bytes": 8130
+    }
+  },
+  "uniform": {
+    "ram": {
+      "seconds": 0.014076,
+      "route_seconds": 0.000666,
+      "checksum": 3335451314969117561,
+      "routed": 4000,
+      "loads": 0,
+      "bytes_loaded": 0,
+      "cache_hits": 0,
+      "cache_peak_payload_bytes": 0
+    },
+    "disk": {
+      "seconds": 0.054433,
+      "route_seconds": 0.003794,
+      "checksum": 3335451314969117561,
+      "routed": 4000,
+      "loads": 10000,
+      "bytes_loaded": 77362,
+      "cache_hits": 0,
+      "cache_peak_payload_bytes": 0
+    },
+    "routed_cache": {
+      "seconds": 0.046375,
+      "route_seconds": 0.00111,
+      "checksum": 3335451314969117561,
+      "routed": 4000,
+      "loads": 6705,
+      "bytes_loaded": 52198,
+      "cache_hits": 3295,
+      "cache_peak_payload_bytes": 52198
+    }
+  }
+}
